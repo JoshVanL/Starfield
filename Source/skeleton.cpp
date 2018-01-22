@@ -24,14 +24,14 @@ int t;
 void Update();
 void Draw(screen* screen);
 void Interpolate( vec3 a, vec3 b, vector<vec3>& result );
-vector<vec3> stars( 1000 );
+vector<vec3> stars( 3000 );
 
-float VELOCITY = 0.001;
+float VELOCITY = 0.002;
 
 int main( int argc, char* argv[] )
 {
 
-    for(int i=0; i<1000; i++)
+    for(uint i=0; i<stars.size(); i++)
     {
         stars[i].x =  ((float)rand())/RAND_MAX * 2 - 1;
         stars[i].y =  ((float)rand())/RAND_MAX * 2 - 1;
@@ -71,7 +71,9 @@ void Draw(screen* screen)
         float u = ((H/2) * (stars[s].x / stars[s].z)) + (W/2);
         float v = ((H/2) * (stars[s].y / stars[s].z)) + (H/2);
 
-        PutPixelSDL(screen, u, v, vec3(1,1,1));
+        vec3 color = 0.2f * vec3(1,1,1) / (stars[s].z * stars[s].z);
+
+        PutPixelSDL(screen, u, v, color);
     }
 }
 
