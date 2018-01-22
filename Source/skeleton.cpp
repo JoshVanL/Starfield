@@ -9,8 +9,8 @@ using namespace std;
 using glm::vec3;
 using glm::mat3;
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 256
+#define SCREEN_WIDTH 1024
+#define SCREEN_HEIGHT 1024
 #define FULLSCREEN_MODE false
 
 
@@ -24,22 +24,25 @@ int t;
 void Update();
 void Draw(screen* screen);
 void Interpolate( vec3 a, vec3 b, vector<vec3>& result );
-vector<vec3> leftSide( SCREEN_HEIGHT );
-vector<vec3> rightSide( SCREEN_HEIGHT );
+vector<vec3> stars( 1000 );
+
+float VELOCITY = 0.001;
 
 int main( int argc, char* argv[] )
 {
 
-    vec3 topLeft(1,0,0);    //red
-    vec3 topRight(0,0,1);   //blue
-    vec3 bottomRight(0,1,0); //green
-    vec3 bottomLeft(1,1,0); //yellow
+    for(int i=0; i<1000; i++)
+    {
+        stars[i].x =  ((float)rand())/RAND_MAX * 2 - 1;
+        stars[i].y =  ((float)rand())/RAND_MAX * 2 - 1;
+        stars[i].z =  ((float)rand())/RAND_MAX;
+    }
 
-    Interpolate( topLeft, bottomLeft, leftSide );
-    Interpolate( topRight, bottomRight, rightSide );
+
 
     screen *screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT, FULLSCREEN_MODE );
     t = SDL_GetTicks();	/*Set start value for timer.*/
+    SDL_GetTicks();	/*Set start value for timer.*/
 
   while( NoQuitMessageSDL() )
     {
@@ -60,30 +63,34 @@ void Draw(screen* screen)
   /* Clear buffer */
   memset(screen->buffer, 0, screen->height*screen->width*sizeof(uint32_t));
 
-  //vec3 colour(1.0,1.0,1.0);
+  float H = screen->height;
+  float W = screen->width;
 
-  for(int j=0; j<SCREEN_HEIGHT; j++)
-  {
-      vector<vec3> rowColors( SCREEN_WIDTH );
-      Interpolate(leftSide[j], rightSide[j], rowColors);
+    for ( size_t s=0; s<stars.size(); ++s )
+    {
+        float u = ((H/2) * (stars[s].x / stars[s].z)) + (W/2);
+        float v = ((H/2) * (stars[s].y / stars[s].z)) + (H/2);
 
-      for(int i=0; i<SCREEN_WIDTH; i++)
-      {
-          PutPixelSDL(screen, i, j, rowColors[i]);
-      }
-  }
+        PutPixelSDL(screen, u, v, vec3(1,1,1));
+    }
 }
 
-/*Place updates of parameters here*/
 void Update()
 {
-  /* Compute frame time */
-  int t2 = SDL_GetTicks();
-  float dt = float(t2-t);
-  t = t2;
-  /*Good idea to remove this*/
-  std::cout << "Render time: " << dt << " ms." << std::endl;
-  /* Update variables*/
+    //static int t;// = SDL_GetTicks();
+    int t2 = SDL_GetTicks();
+    float dt = float(t2-t);
+    t = t2;
+
+    for( uint s=0; s<stars.size(); ++s )
+    {
+        stars[s].z -= VELOCITY * dt;
+
+        if( stars[s].z <= 0 )
+            stars[s].z += 1;
+        if( stars[s].z > 1 )
+            stars[s].z -= 1;
+    }
 }
 
 void Interpolate( vec3 a, vec3 b, vector<vec3>& result )
